@@ -185,7 +185,7 @@ void drawObject(const aiScene* sc, const aiNode* nd)
 // ------A recursive function to traverse scene graph and render each mesh----------
 void render (const aiScene* sc, const aiNode* nd)
 {
-    float gx = lightPosn[0];
+    /*float gx = lightPosn[0];
     float gy = lightPosn[1];
     float gz = lightPosn[2];
     float shadowMat[16] = {gy,0,0,0, -gx,0,-gz,-1, 0,0,gy,0, 0,0,0,gy};
@@ -196,7 +196,7 @@ void render (const aiScene* sc, const aiNode* nd)
     replaceCol = true;
     drawObject(sc, nd);
     glPopMatrix();
-
+*/
 	glPushMatrix();
     materialCol[2] = 1.0;
     replaceCol = false;
