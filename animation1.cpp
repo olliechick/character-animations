@@ -22,7 +22,6 @@ using namespace std;
 const aiScene* scene = NULL;
 float angle = 0;
 aiVector3D scene_min, scene_max, scene_center;
-bool modelRotn = true;
 std::map<int, int> texIdMap;
 
 int tDuration; //Animation duration in ticks.
@@ -295,7 +294,6 @@ void update(int value)
 //----Keyboard callback to toggle initial model orientation---
 void keyboard(unsigned char key, int x, int y)
 {
-	if(key == '1') modelRotn = !modelRotn;   //Enable/disable initial model rotation
 	glutPostRedisplay();
 }
 
@@ -312,7 +310,6 @@ void display()
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosn);
 
 	glRotatef(angle, 0.f, 1.f ,0.f);  //Continuous rotation about the y-axis
-	if(modelRotn) glRotatef(-90, 1, 0, 0);		  //First, rotate the model about x-axis if needed.
 
 	// scale the whole asset to fit into our view frustum 
 	float tmp = scene_max.x - scene_min.x;
