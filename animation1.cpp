@@ -246,7 +246,7 @@ void initialise()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50);
 	glColor4fv(materialCol);
-	loadModel("Dance.bvh");			//<<<-------------Specify input file name here
+	loadModel("Models/ArmyPilot/ArmyPilot.x");			//<<<-------------Specify input file name here
 	loadGLTextures(scene);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
