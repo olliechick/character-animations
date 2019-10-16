@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Input variables
+mainProgram=bvhLoader
+libraryFlags="-lGL -lGLU -lglut -lGLEW -lassimp -lIL -ILU"
+
+# Clean, build, and run main program
+rm $mainProgram
+g++ -Wall -g -o $mainProgram "${mainProgram}.cpp" $libraryFlags
+"./${mainProgram}"
