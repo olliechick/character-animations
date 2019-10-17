@@ -67,6 +67,9 @@ void loadGLTextures(const aiScene* scene)
 
 		if (scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS)
 		{
+		    char* textureFilename = strrchr(path.data, '/');
+		    strncpy(path.data, "Models/ArmyPilot", 24);
+		    strncat(path.data, textureFilename, 1000);
 			glEnable(GL_TEXTURE_2D);
 			ILuint imageId;
 			GLuint texId;
@@ -161,7 +164,8 @@ void drawObject(const aiScene* sc, const aiNode* nd)
                     glColor4fv((GLfloat * ) & mesh->mColors[0][vertexIndex]);
 
                 //Assign texture coordinates here
-                //glTexCoord2f(mesh->mTextureCoords[0][vertexIndex].x, mesh->mTextureCoords[0][vertexIndex].y);
+                if (mesh->mTextureCoords[0] != 0)
+                    glTexCoord2f(mesh->mTextureCoords[0][vertexIndex].x, mesh->mTextureCoords[0][vertexIndex].y);
 
                 if (mesh->HasNormals())
                     glNormal3fv(&mesh->mNormals[vertexIndex].x);
