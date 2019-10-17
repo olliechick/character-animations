@@ -204,6 +204,7 @@ void render (const aiScene* sc, const aiNode* nd)
 	glPushMatrix();
     materialCol[2] = 1.0;
     replaceCol = false;
+    glRotatef(90, 1, 0, 0);
 	drawObject(sc, nd);
 	glPopMatrix();
 }
