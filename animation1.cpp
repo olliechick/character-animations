@@ -138,6 +138,7 @@ void drawObject(const aiScene* sc, const aiNode* nd)
 
         if (mesh->HasTextureCoords(0)) {
             glBindTexture(GL_TEXTURE_2D, texIdMap[mesh->mMaterialIndex]);
+            glEnable(GL_TEXTURE_2D);
         }
 
 
@@ -217,8 +218,8 @@ void drawFloor()
     {
         for(int z = -5000; z <= 5000; z += 50)
         {
-            if(flag) glColor3f(0.258824, 0.529412, 0.960784);
-            else glColor3f(0.258824, 0.960784, 0.690196);
+            if (flag) glColor3f(0.258824, 0.529412, 0.960784); // blue
+            else glColor3f(0.258824, 0.960784, 0.690196); // green
             glVertex3f(x, 0, z);
             glVertex3f(x, 0, z+50);
             glVertex3f(x+50, 0, z+50);
@@ -328,9 +329,10 @@ void display()
 	// center the model
 	glTranslatef(-xc, -yc, -zc);
 
-    drawFloor();
-
     render(scene, scene->mRootNode);
+
+    glDisable(GL_TEXTURE_2D);
+    drawFloor();
 
 	glutSwapBuffers();
 }
