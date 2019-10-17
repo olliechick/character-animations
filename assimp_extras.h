@@ -134,7 +134,7 @@ void printBoneInfo(const aiScene* scene)
 {
 		float* mat = new float[16];
 		cout << "==================== Bone Data ===========================" << endl;
-		int nd = scene->mNumMeshes;
+		//int nd = scene->mNumMeshes;
 		for (uint n = 0; n < scene->mNumMeshes; ++n)
 		{
 			aiMesh* mesh = scene->mMeshes[n];
