@@ -27,7 +27,7 @@ std::map<int, int> texIdMap;
 
 int tDuration; //Animation duration in ticks.
 int currTick = 0; //current tick
-float timeStep = 50; //Animation time step = 50 m.sec
+float timeStep = 10; //Animation time step = 50 m.sec
 
 struct meshInit {
     int mNumVertices;
@@ -46,7 +46,7 @@ bool twoSidedLight = false;                       //Change to 'true' to enable t
 //-------Loads model data from file and creates a scene object----------
 bool loadModel(const char *fileName)
 {
-    scene = aiImportFile(fileName, aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_Debone);
+    scene = aiImportFile(fileName, aiProcessPreset_TargetRealtime_MaxQuality);
     if (scene == NULL) exit(1);
     //printSceneInfo(scene);
     //printMeshInfo(scene);
@@ -229,6 +229,7 @@ void render(const aiScene *sc, const aiNode *nd)
     glPushMatrix();
     materialCol[2] = 1.0;
     replaceCol = false;
+//    glRotatef(90, 0, 1, 0);
     glRotatef(90, 1, 0, 0);
     drawObject(sc, nd);
     glPopMatrix();
@@ -314,6 +315,7 @@ void transformVertices(int tick)
     // transform all meshes assigned to this node
     for (uint m = 0; m < scene->mNumMeshes; m++) {
         aiMesh *mesh = scene->mMeshes[m];
+        aiMatrix4x4 weightedMatrices[mesh->mNumVertices] = {aiMatrix4x4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0)};
         for (uint b = 0; b < mesh->mNumBones; b++) {
             aiBone *bone = mesh->mBones[b];
             aiMatrix4x4 offsetMatrix = bone->mOffsetMatrix; // get offset matrix of bone
@@ -323,17 +325,31 @@ void transformVertices(int tick)
                 matrixProduct = parent->mTransformation * matrixProduct;
                 node = parent;
             }
-            aiMatrix4x4 normal = aiMatrix4x4(matrixProduct).Inverse().Transpose(); // form the normal matrix
 
             for (uint k = 0; k < bone->mNumWeights; k++) {
                 uint v = (bone->mWeights[k]).mVertexId;
-                aiVector3D vert = (initData + m)->mVertices[v];
-                aiVector3D norm = (initData + m)->mNormals[v];
-                mesh->mVertices[v] = matrixProduct * vert;
-                mesh->mNormals[v] = normal * norm;
+                float weight = (bone->mWeights[k]).mWeight;
+                aiMatrix4x4 weightMatrix = aiMatrix4x4(weight,0,0,0, 0,weight,0,0, 0,0,weight,0, 0,0,0,weight);
+                weightedMatrices[v] = weightedMatrices[v] + matrixProduct * weightMatrix;
             }
 
         }
+        for (uint b = 0; b < mesh->mNumBones; b++) {
+            aiBone *bone = mesh->mBones[b];
+
+            for (uint k = 0; k < bone->mNumWeights; k++) {
+                uint v = (bone->mWeights[k]).mVertexId;
+                if (weightedMatrices[v] == aiMatrix4x4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0)) {
+                    weightedMatrices[v] = aiMatrix4x4();
+                }
+                aiMatrix4x4 normal = aiMatrix4x4(weightedMatrices[v]).Inverse().Transpose(); // form the normal matrix
+                aiVector3D vert = (initData + m)->mVertices[v];
+                aiVector3D norm = (initData + m)->mNormals[v];
+                mesh->mVertices[v] = weightedMatrices[v] * vert;
+                mesh->mNormals[v] = normal * norm;
+            }
+        }
+
     }
 }
 
