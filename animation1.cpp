@@ -164,7 +164,7 @@ void drawObject(const aiScene* sc, const aiNode* nd)
                     glColor4fv((GLfloat * ) & mesh->mColors[0][vertexIndex]);
 
                 //Assign texture coordinates here
-                if (mesh->mTextureCoords[0] != 0)
+                if (mesh->HasTextureCoords(0))
                     glTexCoord2f(mesh->mTextureCoords[0][vertexIndex].x, mesh->mTextureCoords[0][vertexIndex].y);
 
                 if (mesh->HasNormals())
