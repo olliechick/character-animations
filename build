@@ -6,6 +6,11 @@ mainProgram="animation${programNumber}"
 libraryFlags="-lGL -lGLU -lglut -lGLEW -lassimp -lIL -ILU"
 
 # Clean, build, and run main program
-rm animation1
+rm $mainProgram
 g++ -Wall -g -o $mainProgram "${mainProgram}.cpp" $libraryFlags
-"./${mainProgram}"
+if [ -n "${2}" ]
+then
+    "/usr/bin/valgrind" "/home/cosc/student/och26/Documents/cosc422-assignment2/${mainProgram}"
+else
+    "./${mainProgram}"
+fi
