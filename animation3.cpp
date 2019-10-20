@@ -457,7 +457,7 @@ void update(int value)
         currTick = 0;
         glutTimerFunc(timeStep, update, 0);
     }
-    if (currTick == 1) get_bounding_box(scene, &scene_min, &scene_max);
+//    if (currTick == 1) get_bounding_box(scene, &scene_min, &scene_max);
     glutPostRedisplay();
 }
 
@@ -558,6 +558,7 @@ int main(int argc, char **argv)
 
     initialise();
     glutDisplayFunc(display);
+    get_bounding_box(scene, &scene_min, &scene_max);
     glutTimerFunc(timeStep, update, 0);
     glutKeyboardFunc(keyboard);
     glutSpecialFunc(special);
