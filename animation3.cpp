@@ -73,8 +73,7 @@ bool loadModel(const char *fileName1, const char *fileName2)
     //printTreeInfo(scene->mRootNode);
     //printBoneInfo(scene);
     //printAnimInfo(scene);  //WARNING:  This may generate a lengthy output if the model has animation data
-    //loadAnimation(fileName2, 0);
-    scene2 = scene;
+    loadAnimation(fileName1, 0);
 
     // Store initial mesh data
     initData = new meshInit[scene->mNumMeshes];
@@ -301,7 +300,7 @@ void initialise()
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50);
     glColor4fv(materialCol);
     loadModel("Models/Dwarf/dwarf.x",
-              "Models/Dwarf/avatar_walk.vbh");            //<<<-------------Specify input file name here
+              "Models/Dwarf/avatar_walk.bvh");            //<<<-------------Specify input file name here
     loadGLTextures(scene);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
