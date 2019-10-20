@@ -137,7 +137,8 @@ void loadGLTextures(const aiScene *scene)
 
 }
 
-void drawObject(const aiScene *sc, const aiNode *nd)
+// ------A recursive function to traverse scene graph and render each mesh----------
+void render(const aiScene *sc, const aiNode *nd)
 {
     aiMatrix4x4 m = nd->mTransformation;
     aiMesh *mesh;
@@ -218,31 +219,10 @@ void drawObject(const aiScene *sc, const aiNode *nd)
     for (uint i = 0; i < nd->mNumChildren; i++) {
         glPushMatrix();
         {
-            drawObject(sc, nd->mChildren[i]);
+            render(sc, nd->mChildren[i]);
         }
         glPopMatrix();
     }
-}
-
-// ------A recursive function to traverse scene graph and render each mesh----------
-void render(const aiScene *sc, const aiNode *nd)
-{
-    /*float gx = lightPosn[0];
-    float gy = lightPosn[1];
-    float gz = lightPosn[2];
-    float shadowMat[16] = {gy,0,0,0, -gx,0,-gz,-1, 0,0,gy,0, 0,0,0,gy};
-
-    glPushMatrix();
-    glMultMatrixf(shadowMat);
-    materialCol[2] = 0.2;
-    replaceCol = true;
-    drawObject(sc, nd);
-    glPopMatrix();
-
-    materialCol[2] = 1.0;
-    replaceCol = false;
-    glRotatef(90, 0, 1, 0);*/
-    drawObject(sc, nd);
 }
 
 void drawFloor()
