@@ -38,7 +38,7 @@ float camDistance = 0;
 
 int tDuration; //Animation duration in ticks.
 int currTick = 0; //current tick
-float timeStep = 10; //Animation time step = 50 m.sec
+float timeStep = 5; //Animation time step in milliseconds
 
 struct meshInit {
     int mNumVertices;
