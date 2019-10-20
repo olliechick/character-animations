@@ -73,7 +73,8 @@ bool loadModel(const char *fileName1, const char *fileName2)
     //printTreeInfo(scene->mRootNode);
     //printBoneInfo(scene);
     //printAnimInfo(scene);  //WARNING:  This may generate a lengthy output if the model has animation data
-    loadAnimation(fileName2, 0);
+    //loadAnimation(fileName2, 0);
+    scene2 = scene;
 
     // Store initial mesh data
     initData = new meshInit[scene->mNumMeshes];
@@ -321,8 +322,7 @@ void updateNodeMatrices(int tick)
         if (ndAnim->mNumPositionKeys > 1) index = tick;
         else index = 0;
         aiVector3D posn = (ndAnim->mPositionKeys[index]).mValue;
-        if (ndAnim->mNodeName != aiString("free3dmodel_skeleton"))
-            matPos.Translation(posn, matPos);
+        matPos.Translation(posn, matPos);
         if (ndAnim->mNumRotationKeys > 1) index = tick;
         else index = 0;
         aiQuaternion rotn = (ndAnim->mRotationKeys[index]).mValue;
