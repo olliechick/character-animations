@@ -55,8 +55,8 @@ map<string, int> nodeMap = {
         {"rankle", 20},
         {"lknee",  16},
         {"rknee",  19},
-        {"rhip",   18},
         {"lhip",   15},
+        {"rhip",   18},
         {"spine1", 4},
         {"spine2", 2}
 };
