@@ -368,16 +368,14 @@ void transformVertices(int tick)
 //----Timer callback----
 void update(int value)
 {
-    if (currTick < tDuration) {
-        updateNodeMatrices(currTick);
-        transformVertices(currTick);
-        glutTimerFunc(timeStep, update, 0);
-        currTick++;
-    } else {
-        currTick = 0;
-        glutTimerFunc(timeStep, update, 0);
-    }
-    if (currTick == 1) get_bounding_box(scene, &scene_min, &scene_max);
+    int currTickMod = currTick % tDuration;
+
+    updateNodeMatrices(currTickMod);
+    transformVertices(currTickMod);
+    glutTimerFunc(timeStep, update, 0);
+    currTick++;
+
+    if (currTickMod == 1) get_bounding_box(scene, &scene_min, &scene_max);
     glutPostRedisplay();
 }
 
@@ -454,6 +452,7 @@ void display()
 
     glPushMatrix();
     {
+        glTranslatef(0, 0, -currTick * 100);
         glDisable(GL_TEXTURE_2D);
         drawFloor();
     }
