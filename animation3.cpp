@@ -39,6 +39,7 @@ float camDistance = 0;
 
 int tDuration; //Animation duration in ticks.
 int currTick = 0; //current tick
+int walkTick = 0; // current tick used for walking
 float timeStep = 20; //Animation time step in milliseconds
 
 struct meshInit {
@@ -450,6 +451,7 @@ void update(int value)
     transformVertices(currTickMod);
     glutTimerFunc(timeStep, update, 0);
     currTick++;
+    if (currentAnimation == 2) walkTick++;
 
     if (currTickMod == 1) get_bounding_box(scene, &scene_min, &scene_max);
     glutPostRedisplay();
@@ -532,7 +534,7 @@ void display()
 
     glPushMatrix();
     {
-        glTranslatef(0, 0, -currTick);
+        glTranslatef(0, 0, -walkTick);
         glDisable(GL_TEXTURE_2D);
         drawFloor();
     }
