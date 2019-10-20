@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Input variables
-mainProgram=animation1
+programNumber=$1
+mainProgram="animation${programNumber}"
 libraryFlags="-lGL -lGLU -lglut -lGLEW -lassimp -lIL -ILU"
 
 # Clean, build, and run main program
