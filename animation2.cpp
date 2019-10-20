@@ -384,6 +384,7 @@ void keyboard(unsigned char key, int x, int y)
     if (key == 'r') {
         camAngle = 0;
         camDistance = 3;
+        currTick = 0;
     }
     glutPostRedisplay();
 }
