@@ -236,18 +236,23 @@ void render(const aiScene *sc, const aiNode *nd)
 
 void drawFloor()
 {
+    int floorSize = 2000; // half of width/depth
+    int increment = 50; // length of each square
+    int floorHeight = 0;
+
     bool flag = false;
 
+    glNormal3f(0.0, 1.0, 0.0);
+
     glBegin(GL_QUADS);
-    glNormal3f(0, 1, 0);
-    for (int x = -5000; x <= 5000; x += 50) {
-        for (int z = -5000; z <= 5000; z += 50) {
+    for (int i = -floorSize; i <= floorSize; i += increment) {
+        for (int j = -floorSize; j <= floorSize; j += increment) {
             if (flag) glColor3f(0.258824, 0.529412, 0.960784); // blue
             else glColor3f(0.258824, 0.960784, 0.690196); // green
-            glVertex3f(x, 0, z);
-            glVertex3f(x, 0, z + 50);
-            glVertex3f(x + 50, 0, z + 50);
-            glVertex3f(x + 50, 0, z);
+            glVertex3f(i, floorHeight, j);
+            glVertex3f(i, floorHeight, j + increment);
+            glVertex3f(i + increment, floorHeight, j + increment);
+            glVertex3f(i + increment, floorHeight, j);
             flag = !flag;
         }
     }
