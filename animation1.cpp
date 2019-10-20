@@ -19,11 +19,22 @@ using namespace std;
 #include <assimp/postprocess.h>
 #include "assimp_extras.h"
 
+#define TAU 6.28318530718
+
 //----------Globals----------------------------
 const aiScene *scene = NULL;
-float angle = 0;
 aiVector3D scene_min, scene_max, scene_center;
 std::map<int, int> texIdMap;
+
+struct vec3 {
+    float x;
+    float y;
+    float z;
+};
+
+vec3 eye, lookAt;
+float camAngle = 0;
+float camDistance = 0;
 
 int tDuration; //Animation duration in ticks.
 int currTick = 0; //current tick
@@ -206,7 +217,9 @@ void drawObject(const aiScene *sc, const aiNode *nd)
     // Draw all children
     for (uint i = 0; i < nd->mNumChildren; i++) {
         glPushMatrix();
-        drawObject(sc, nd->mChildren[i]);
+        {
+            drawObject(sc, nd->mChildren[i]);
+        }
         glPopMatrix();
     }
 }
@@ -225,14 +238,11 @@ void render(const aiScene *sc, const aiNode *nd)
     replaceCol = true;
     drawObject(sc, nd);
     glPopMatrix();
-*/
-    glPushMatrix();
+
     materialCol[2] = 1.0;
     replaceCol = false;
-//    glRotatef(90, 0, 1, 0);
-    glRotatef(90, 1, 0, 0);
+    glRotatef(90, 0, 1, 0);*/
     drawObject(sc, nd);
-    glPopMatrix();
 }
 
 void drawFloor()
@@ -258,6 +268,10 @@ void drawFloor()
 //--------------------OpenGL initialization------------------------
 void initialise()
 {
+    eye = {0, 0, 3};
+    lookAt = {0, 0, 1};
+    camDistance = 3;
+
     float ambient[4] = {0.2, 0.2, 0.2, 1.0};  //Ambient light
     float white[4] = {1, 1, 1, 1};            //Light's colour
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -329,7 +343,8 @@ void transformVertices(int tick)
             for (uint k = 0; k < bone->mNumWeights; k++) {
                 uint v = (bone->mWeights[k]).mVertexId;
                 float weight = (bone->mWeights[k]).mWeight;
-                aiMatrix4x4 weightMatrix = aiMatrix4x4(weight,0,0,0, 0,weight,0,0, 0,0,weight,0, 0,0,0,weight);
+                aiMatrix4x4 weightMatrix = aiMatrix4x4(weight, 0, 0, 0, 0, weight, 0, 0, 0, 0, weight, 0, 0, 0, 0,
+                                                       weight);
                 if (weightedMatrices[v] == aiMatrix4x4()) {
                     weightedMatrices[v] = matrixProduct * weightMatrix;
                 } else {
@@ -370,9 +385,42 @@ void update(int value)
     glutPostRedisplay();
 }
 
-//----Keyboard callback to toggle initial model orientation---
 void keyboard(unsigned char key, int x, int y)
 {
+    if (key == 'r') {
+        camAngle = 0;
+        camDistance = 3;
+    }
+    glutPostRedisplay();
+}
+
+void special(int key, int x, int y)
+{
+    if (key == GLUT_KEY_UP) {
+        camDistance--;
+    } else if (key == GLUT_KEY_DOWN) {
+        camDistance++;
+    } else if (key == GLUT_KEY_PAGE_UP) {
+        camDistance -= 10;
+    } else if (key == GLUT_KEY_PAGE_DOWN) {
+        camDistance += 10;
+    } else if (key == GLUT_KEY_RIGHT) {
+        camAngle += 0.01;
+    } else if (key == GLUT_KEY_LEFT) {
+        camAngle -= 0.01;
+    }else if (key == GLUT_KEY_END) {
+        camAngle += 0.1;
+    } else if (key == GLUT_KEY_HOME) {
+        camAngle -= 0.1;
+    }
+
+    // don't let it go closer than 3
+    if (camDistance < 3) camDistance = 3;
+
+    // keep cam angle between 0 and 2 pi
+    if (camAngle > TAU) camAngle -= TAU;
+    if (camAngle < TAU) camAngle += TAU;
+
     glutPostRedisplay();
 }
 
@@ -381,14 +429,13 @@ void keyboard(unsigned char key, int x, int y)
 //    stored for subsequent display updates.
 void display()
 {
+    eye = {lookAt.x + sin(camAngle) * camDistance, 0, lookAt.z + cos(camAngle) * camDistance};
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(0, 0, 3, 0, 0, -5, 0, 1, 0);
+    gluLookAt(eye.x, eye.y, eye.z, lookAt.x, lookAt.y, lookAt.z, 0, 1, 0);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosn);
-
-    glRotatef(angle, 0.f, 1.f, 0.f);  //Continuous rotation about the y-axis
 
     // scale the whole asset to fit into our view frustum
     float tmp = scene_max.x - scene_min.x;
@@ -403,10 +450,19 @@ void display()
     // center the model
     glTranslatef(-xc, -yc, -zc);
 
-    render(scene, scene->mRootNode);
+    glPushMatrix();
+    {
+        glRotatef(90, 1, 0, 0);
+        render(scene, scene->mRootNode);
+    }
+    glPopMatrix();
 
-    glDisable(GL_TEXTURE_2D);
-    drawFloor();
+    glPushMatrix();
+    {
+        glDisable(GL_TEXTURE_2D);
+        drawFloor();
+    }
+    glPopMatrix();
 
     glutSwapBuffers();
 }
@@ -425,6 +481,7 @@ int main(int argc, char **argv)
     glutDisplayFunc(display);
     glutTimerFunc(timeStep, update, 0);
     glutKeyboardFunc(keyboard);
+    glutSpecialFunc(special);
     glutMainLoop();
 
     aiReleaseImport(scene);
