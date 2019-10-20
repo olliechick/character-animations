@@ -59,7 +59,7 @@ map<string, int> nodeMap = {
         {"spine1", 4},
         {"spine2", 2}
 };
-bool watchingScene2 = false;
+int currentAnimation = 1;
 
 //------------Modify the following as needed----------------------
 float materialCol[4] = {0.2, 0.2, 1, 1};   //Default material colour (not used if model's colour is available)
@@ -314,7 +314,7 @@ void updateNodeMatrices(int tick)
     aiMatrix4x4 matPos, matRot, matProd;
     aiMatrix3x3 matRot3;
     aiNode *nd;
-    for (uint i = 0; i < anim->mNumChannels; i++) {
+    for (uint i = 0; i < anim->mNumChannels; i++) { // for each channel (sequence of animatable params for a joint)
         matPos = aiMatrix4x4(); //Identity
         matRot = aiMatrix4x4();
         aiNodeAnim *ndAnim = anim->mChannels[i]; //Channel
@@ -323,15 +323,14 @@ void updateNodeMatrices(int tick)
 
         // Get position
         index = 0;
-        if (ndAnim->mNumPositionKeys > 1) {
+        if (currentAnimation == 1 && ndAnim->mNumPositionKeys > 1) {
             for (uint i = 1; i < ndAnim->mNumPositionKeys; i++) {
                 if ((ndAnim->mPositionKeys[i - 1]).mTime < tick && tick <= ndAnim->mPositionKeys[i].mTime) {
                     index = i;
                     break;
                 }
             }
-        }
-        if (watchingScene2 && i == 1) index = 0;
+        } // if we are watching the second animation or there is only 1 position key, use the first position
         aiVector3D posn = (ndAnim->mPositionKeys[index]).mValue;
 
         matPos.Translation(posn, matPos);
@@ -339,52 +338,48 @@ void updateNodeMatrices(int tick)
         // Get rotation
         aiQuaternion rotn;
         index = 0;
-        if (ndAnim->mNumRotationKeys > 1) {
-            for (uint i = 1; i < ndAnim->mNumRotationKeys; i++) {
-                if ((ndAnim->mRotationKeys[i - 1]).mTime < tick && tick <= ndAnim->mRotationKeys[i].mTime) {
-                    index = i;
-                    break;
-                }
-            }
-
-        } else {
-            rotn = (ndAnim->mRotationKeys[index]).mValue;
-        }
-
-        if (index == 0) rotn = (ndAnim->mRotationKeys[index]).mValue;
-        else {
-            aiQuaternion rotn1 = (ndAnim->mRotationKeys[index - 1]).mValue;
-            aiQuaternion rotn2 = (ndAnim->mRotationKeys[index]).mValue;
-            double time1 = (ndAnim->mRotationKeys[index - 1]).mTime;
-            double time2 = (ndAnim->mRotationKeys[index]).mTime;
-            double factor = (tick - time1) / (time2 - time1);
-            rotn.Interpolate(rotn, rotn1, rotn2, factor);
-        }
-
-        // Get rotation from second animation (avatar_walk)
-        if (watchingScene2 && nodeMap.find(ndAnim->mNodeName.C_Str()) != nodeMap.end()) {
-            int channelId = nodeMap.at(ndAnim->mNodeName.C_Str());
-            aiNodeAnim *ndAnim2 = anim2->mChannels[channelId];
-
-            // Get rotation
-            index = 0;
-            if (ndAnim2->mNumRotationKeys > 1) {
-                for (uint i = 1; i < ndAnim2->mNumRotationKeys; i++) {
-                    if ((ndAnim2->mRotationKeys[i - 1]).mTime * (duration1/duration2) < tick && tick <= ndAnim2->mRotationKeys[i].mTime * (duration1/duration2)) {
+        if (currentAnimation == 1) {
+            if (ndAnim->mNumRotationKeys > 1) {
+                for (uint i = 1; i < ndAnim->mNumRotationKeys; i++) {
+                    if ((ndAnim->mRotationKeys[i - 1]).mTime < tick && tick <= ndAnim->mRotationKeys[i].mTime) {
                         index = i;
                         break;
                     }
                 }
-            } else {
-                rotn = (ndAnim2->mRotationKeys[index]).mValue;
+            }
+
+            if (index == 0) rotn = (ndAnim->mRotationKeys[index]).mValue;
+            else {
+                aiQuaternion rotn1 = (ndAnim->mRotationKeys[index - 1]).mValue;
+                aiQuaternion rotn2 = (ndAnim->mRotationKeys[index]).mValue;
+                double time1 = (ndAnim->mRotationKeys[index - 1]).mTime;
+                double time2 = (ndAnim->mRotationKeys[index]).mTime;
+                double factor = (tick - time1) / (time2 - time1);
+                rotn.Interpolate(rotn, rotn1, rotn2, factor);
+            }
+        }
+        // Get rotation from second animation (avatar_walk)
+        if (currentAnimation == 2 && nodeMap.find(ndAnim->mNodeName.C_Str()) != nodeMap.end()) {
+            // First, find the channel in animation 2 that maps to channel in (builtin) animation 1
+            int channelId = nodeMap.at(ndAnim->mNodeName.C_Str());
+            aiNodeAnim *ndAnim2 = anim2->mChannels[channelId];
+
+            if (ndAnim2->mNumRotationKeys > 1) {
+                for (uint i = 1; i < ndAnim2->mNumRotationKeys; i++) {
+                    if ((ndAnim2->mRotationKeys[i - 1]).mTime * (duration1 / duration2) < tick &&
+                        tick <= ndAnim2->mRotationKeys[i].mTime * (duration1 / duration2)) {
+                        index = i;
+                        break;
+                    }
+                }
             }
 
             if (index == 0) rotn = (ndAnim2->mRotationKeys[index]).mValue;
             else {
                 aiQuaternion rotn1 = (ndAnim2->mRotationKeys[index - 1]).mValue;
                 aiQuaternion rotn2 = (ndAnim2->mRotationKeys[index]).mValue;
-                double time1 = (ndAnim2->mRotationKeys[index - 1]).mTime * (duration1/duration2);
-                double time2 = (ndAnim2->mRotationKeys[index]).mTime * (duration1/duration2);
+                double time1 = (ndAnim2->mRotationKeys[index - 1]).mTime * (duration1 / duration2);
+                double time2 = (ndAnim2->mRotationKeys[index]).mTime * (duration1 / duration2);
                 double factor = (tick - time1) / (time2 - time1);
                 rotn.Interpolate(rotn, rotn1, rotn2, factor);
             }
@@ -396,6 +391,7 @@ void updateNodeMatrices(int tick)
         nd = scene->mRootNode->FindNode(ndAnim->mNodeName);
         nd->mTransformation = matProd;
     }
+
 }
 
 void transformVertices(int tick)
@@ -467,9 +463,9 @@ void keyboard(unsigned char key, int x, int y)
         camAngle = 0;
         camDistance = 3;
     } else if (key == '1') {
-        watchingScene2 = false;
+        currentAnimation = 1;
     } else if (key == '2') {
-        watchingScene2 = true;
+        currentAnimation = 2;
     }
     glutPostRedisplay();
 }
