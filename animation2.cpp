@@ -39,7 +39,7 @@ float camDistance = 0;
 
 int tDuration; //Animation duration in ticks.
 int currTick = 0; //current tick
-float timeStep = 10; //Animation time step = 50 m.sec
+float timeStep = 50; //Animation time step = 50 m.sec
 
 struct meshInit {
     int mNumVertices;
@@ -278,7 +278,7 @@ void drawFloor()
 void initialise()
 {
     eye = {0, 0, 3};
-    lookAt = {0, 0, 1};
+    lookAt = {0, 0, 0};
     camDistance = 3;
 
     float ambient[4] = {0.2, 0.2, 0.2, 1.0};  //Ambient light
