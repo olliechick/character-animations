@@ -23,6 +23,7 @@ using namespace std;
 
 //----------Globals----------------------------
 const aiScene *scene = NULL;
+const aiScene *scene2 = NULL;
 aiVector3D scene_min, scene_max, scene_center;
 std::map<int, int> texIdMap;
 
@@ -54,17 +55,25 @@ bool replaceCol = false;                       //Change to 'true' to set the mod
 float lightPosn[4] = {0, 50, 50, 1};         //Default light's position
 bool twoSidedLight = false;                       //Change to 'true' to enable two-sided lighting
 
-//-------Loads model data from file and creates a scene object----------
-bool loadModel(const char *fileName)
+
+void loadAnimation(const char *fileName, int animationIndex)
 {
-    scene = aiImportFile(fileName, aiProcessPreset_TargetRealtime_MaxQuality);
+    scene2 = aiImportFile(fileName, aiProcessPreset_TargetRealtime_MaxQuality);
+    if (scene2 == NULL) exit(1);
+    tDuration = scene2->mAnimations[0]->mDuration;
+}
+
+//-------Loads model data from fileName1, animation data from fileName2 and creates a scene object----------
+bool loadModel(const char *fileName1, const char *fileName2)
+{
+    scene = aiImportFile(fileName1, aiProcessPreset_TargetRealtime_MaxQuality);
     if (scene == NULL) exit(1);
     //printSceneInfo(scene);
     //printMeshInfo(scene);
     //printTreeInfo(scene->mRootNode);
     //printBoneInfo(scene);
     //printAnimInfo(scene);  //WARNING:  This may generate a lengthy output if the model has animation data
-    tDuration = scene->mAnimations[0]->mDuration;
+    loadAnimation(fileName2, 0);
 
     // Store initial mesh data
     initData = new meshInit[scene->mNumMeshes];
@@ -289,7 +298,7 @@ void initialise()
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50);
     glColor4fv(materialCol);
-    loadModel("Models/Mannequin/mannequin.fbx");            //<<<-------------Specify input file name here
+    loadModel("Models/Mannequin/mannequin.fbx", "Models/Mannequin/run.fbx");            //<<<-------------Specify input file name here
     loadGLTextures(scene);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -299,7 +308,7 @@ void initialise()
 void updateNodeMatrices(int tick)
 {
     int index;
-    aiAnimation *anim = scene->mAnimations[0];
+    aiAnimation *anim = scene2->mAnimations[0];
     aiMatrix4x4 matPos, matRot, matProd;
     aiMatrix3x3 matRot3;
     aiNode *nd;
@@ -408,7 +417,7 @@ void special(int key, int x, int y)
         camAngle += 0.01;
     } else if (key == GLUT_KEY_LEFT) {
         camAngle -= 0.01;
-    }else if (key == GLUT_KEY_END) {
+    } else if (key == GLUT_KEY_END) {
         camAngle += 0.1;
     } else if (key == GLUT_KEY_HOME) {
         camAngle -= 0.1;
@@ -452,7 +461,6 @@ void display()
 
     glPushMatrix();
     {
-        glRotatef(90, 1, 0, 0);
         render(scene, scene->mRootNode);
     }
     glPopMatrix();
