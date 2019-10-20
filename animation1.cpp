@@ -1,9 +1,9 @@
 //  ========================================================================
 //  COSC422: Advanced Computer Graphics;  University of Canterbury (2019)
 //
-//  FILE NAME: ModelLoader.cpp
-//  
-//  Press key '1' to toggle 90 degs model rotation about x-axis on/off.
+//  Assignment 2, part 1
+//
+//  By Ollie Chick, adapted from lab files
 //  ========================================================================
 
 #include <iostream>
@@ -315,7 +315,7 @@ void transformVertices(int tick)
     // transform all meshes assigned to this node
     for (uint m = 0; m < scene->mNumMeshes; m++) {
         aiMesh *mesh = scene->mMeshes[m];
-        aiMatrix4x4 weightedMatrices[mesh->mNumVertices] = {aiMatrix4x4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0)};
+        aiMatrix4x4 weightedMatrices[mesh->mNumVertices] = {aiMatrix4x4()};
         for (uint b = 0; b < mesh->mNumBones; b++) {
             aiBone *bone = mesh->mBones[b];
             aiMatrix4x4 offsetMatrix = bone->mOffsetMatrix; // get offset matrix of bone
@@ -330,7 +330,11 @@ void transformVertices(int tick)
                 uint v = (bone->mWeights[k]).mVertexId;
                 float weight = (bone->mWeights[k]).mWeight;
                 aiMatrix4x4 weightMatrix = aiMatrix4x4(weight,0,0,0, 0,weight,0,0, 0,0,weight,0, 0,0,0,weight);
-                weightedMatrices[v] = weightedMatrices[v] + matrixProduct * weightMatrix;
+                if (weightedMatrices[v] == aiMatrix4x4()) {
+                    weightedMatrices[v] = matrixProduct * weightMatrix;
+                } else {
+                    weightedMatrices[v] = weightedMatrices[v] + matrixProduct * weightMatrix;
+                }
             }
 
         }
@@ -339,9 +343,6 @@ void transformVertices(int tick)
 
             for (uint k = 0; k < bone->mNumWeights; k++) {
                 uint v = (bone->mWeights[k]).mVertexId;
-                if (weightedMatrices[v] == aiMatrix4x4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0)) {
-                    weightedMatrices[v] = aiMatrix4x4();
-                }
                 aiMatrix4x4 normal = aiMatrix4x4(weightedMatrices[v]).Inverse().Transpose(); // form the normal matrix
                 aiVector3D vert = (initData + m)->mVertices[v];
                 aiVector3D norm = (initData + m)->mNormals[v];
