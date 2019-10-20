@@ -458,7 +458,7 @@ int main(int argc, char **argv)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(600, 600);
-    glutCreateWindow("Model Loader");
+    glutCreateWindow("Ollie Chick COSC422 assignment 2 part 1");
     glutInitContextVersion(4, 2);
     glutInitContextProfile(GLUT_CORE_PROFILE);
 
