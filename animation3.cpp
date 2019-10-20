@@ -108,8 +108,9 @@ void loadGLTextures(const aiScene *scene)
         aiString path;  // filename
 
         if (scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
-            char *textureFilename = strrchr(path.data, '/');
-            strncpy(path.data, "Models/ArmyPilot", 24);
+            char textureFilename[100];
+            strncpy(textureFilename, path.data, 100);
+            strncpy(path.data, "Models/Dwarf/", 24);
             strncat(path.data, textureFilename, 1000);
             glEnable(GL_TEXTURE_2D);
             ILuint imageId;
@@ -298,8 +299,8 @@ void initialise()
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50);
     glColor4fv(materialCol);
-    loadModel("Models/Mannequin/mannequin.fbx",
-              "Models/Mannequin/run.fbx");            //<<<-------------Specify input file name here
+    loadModel("Models/Dwarf/dwarf.x",
+              "Models/Dwarf/avatar_walk.vbh");            //<<<-------------Specify input file name here
     loadGLTextures(scene);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
