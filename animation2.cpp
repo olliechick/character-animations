@@ -298,7 +298,8 @@ void initialise()
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50);
     glColor4fv(materialCol);
-    loadModel("Models/Mannequin/mannequin.fbx", "Models/Mannequin/run.fbx");            //<<<-------------Specify input file name here
+    loadModel("Models/Mannequin/mannequin.fbx",
+              "Models/Mannequin/run.fbx");            //<<<-------------Specify input file name here
     loadGLTextures(scene);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -319,7 +320,8 @@ void updateNodeMatrices(int tick)
         if (ndAnim->mNumPositionKeys > 1) index = tick;
         else index = 0;
         aiVector3D posn = (ndAnim->mPositionKeys[index]).mValue;
-        matPos.Translation(posn, matPos);
+        if (ndAnim->mNodeName != aiString("free3dmodel_skeleton"))
+            matPos.Translation(posn, matPos);
         if (ndAnim->mNumRotationKeys > 1) index = tick;
         else index = 0;
         aiQuaternion rotn = (ndAnim->mRotationKeys[index]).mValue;
