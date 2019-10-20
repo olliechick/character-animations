@@ -40,7 +40,7 @@ float camDistance = 0;
 int tDuration; //Animation duration in ticks.
 int currTick = 0; //current tick
 int walkTick = 0; // current tick used for walking
-float timeStep = 20; //Animation time step in milliseconds
+float timeStep = 50; //Animation time step in milliseconds
 
 struct meshInit {
     int mNumVertices;
@@ -86,7 +86,7 @@ bool loadModel(const char *fileName1, const char *fileName2)
     //printMeshInfo(scene);
     //printTreeInfo(scene->mRootNode);
     //printBoneInfo(scene);
-    printAnimInfo(scene2);  //WARNING:  This may generate a lengthy output if the model has animation data
+    //printAnimInfo(scene2);  //WARNING:  This may generate a lengthy output if the model has animation data
 
 
     // Store initial mesh data
