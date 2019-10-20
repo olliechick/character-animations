@@ -39,7 +39,7 @@ float camDistance = 0;
 
 int tDuration; //Animation duration in ticks.
 int currTick = 0; //current tick
-float timeStep = 50; //Animation time step = 50 m.sec
+float timeStep = 1; //Animation time step = 50 m.sec
 
 struct meshInit {
     int mNumVertices;
@@ -48,6 +48,18 @@ struct meshInit {
 };
 
 meshInit *initData;
+
+map<string, int> nodeMap = {
+        {"lankle", 17},
+        {"rankle", 20},
+        {"lknee",  16},
+        {"rknee",  19},
+        {"rhip",   18},
+        {"lhip",   15},
+        {"spine1", 4},
+        {"spine2", 2}
+};
+bool watchingScene2 = false;
 
 //------------Modify the following as needed----------------------
 float materialCol[4] = {0.2, 0.2, 1, 1};   //Default material colour (not used if model's colour is available)
@@ -60,7 +72,7 @@ void loadAnimation(const char *fileName, int animationIndex)
 {
     scene2 = aiImportFile(fileName, aiProcessPreset_TargetRealtime_MaxQuality);
     if (scene2 == NULL) exit(1);
-    tDuration = scene2->mAnimations[0]->mDuration;
+    tDuration = scene->mAnimations[0]->mDuration;
 }
 
 //-------Loads model data from fileName1, animation data from fileName2 and creates a scene object----------
@@ -68,12 +80,13 @@ bool loadModel(const char *fileName1, const char *fileName2)
 {
     scene = aiImportFile(fileName1, aiProcessPreset_TargetRealtime_MaxQuality);
     if (scene == NULL) exit(1);
+    loadAnimation(fileName2, 0);
     //printSceneInfo(scene);
     //printMeshInfo(scene);
     //printTreeInfo(scene->mRootNode);
     //printBoneInfo(scene);
-    //printAnimInfo(scene);  //WARNING:  This may generate a lengthy output if the model has animation data
-    loadAnimation(fileName1, 0);
+    printAnimInfo(scene2);  //WARNING:  This may generate a lengthy output if the model has animation data
+
 
     // Store initial mesh data
     initData = new meshInit[scene->mNumMeshes];
@@ -309,8 +322,9 @@ void initialise()
 
 void updateNodeMatrices(int tick)
 {
-    int index;
-    aiAnimation *anim = scene2->mAnimations[0];
+    int index = 0;
+    aiAnimation *anim = scene->mAnimations[0];
+    aiAnimation *anim2 = scene2->mAnimations[0];
     aiMatrix4x4 matPos, matRot, matProd;
     aiMatrix3x3 matRot3;
     aiNode *nd;
@@ -318,13 +332,78 @@ void updateNodeMatrices(int tick)
         matPos = aiMatrix4x4(); //Identity
         matRot = aiMatrix4x4();
         aiNodeAnim *ndAnim = anim->mChannels[i]; //Channel
-        if (ndAnim->mNumPositionKeys > 1) index = tick;
-        else index = 0;
+        float duration1 = anim->mDuration;
+        float duration2 = anim2->mDuration;
+
+        // Get position
+        index = 0;
+        if (ndAnim->mNumPositionKeys > 1) {
+            for (uint i = 1; i < ndAnim->mNumPositionKeys; i++) {
+                if ((ndAnim->mPositionKeys[i - 1]).mTime < tick && tick <= ndAnim->mPositionKeys[i].mTime) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        if (watchingScene2 && i == 1) index = 0;
         aiVector3D posn = (ndAnim->mPositionKeys[index]).mValue;
+
         matPos.Translation(posn, matPos);
-        if (ndAnim->mNumRotationKeys > 1) index = tick;
-        else index = 0;
-        aiQuaternion rotn = (ndAnim->mRotationKeys[index]).mValue;
+
+        // Get rotation
+        aiQuaternion rotn;
+        index = 0;
+        if (ndAnim->mNumRotationKeys > 1) {
+            for (uint i = 1; i < ndAnim->mNumRotationKeys; i++) {
+                if ((ndAnim->mRotationKeys[i - 1]).mTime < tick && tick <= ndAnim->mRotationKeys[i].mTime) {
+                    index = i;
+                    break;
+                }
+            }
+
+        } else {
+            rotn = (ndAnim->mRotationKeys[index]).mValue;
+        }
+
+        if (index == 0) rotn = (ndAnim->mRotationKeys[index]).mValue;
+        else {
+            aiQuaternion rotn1 = (ndAnim->mRotationKeys[index - 1]).mValue;
+            aiQuaternion rotn2 = (ndAnim->mRotationKeys[index]).mValue;
+            double time1 = (ndAnim->mRotationKeys[index - 1]).mTime;
+            double time2 = (ndAnim->mRotationKeys[index]).mTime;
+            double factor = (tick - time1) / (time2 - time1);
+            rotn.Interpolate(rotn, rotn1, rotn2, factor);
+        }
+
+        // Get rotation from second animation (avatar_walk)
+        if (watchingScene2 && nodeMap.find(ndAnim->mNodeName.C_Str()) != nodeMap.end()) {
+            int channelId = nodeMap.at(ndAnim->mNodeName.C_Str());
+            aiNodeAnim *ndAnim2 = anim2->mChannels[channelId];
+
+            // Get rotation
+            index = 0;
+            if (ndAnim2->mNumRotationKeys > 1) {
+                for (uint i = 1; i < ndAnim2->mNumRotationKeys; i++) {
+                    if ((ndAnim2->mRotationKeys[i - 1]).mTime * (duration1/duration2) < tick && tick <= ndAnim2->mRotationKeys[i].mTime * (duration1/duration2)) {
+                        index = i;
+                        break;
+                    }
+                }
+            } else {
+                rotn = (ndAnim2->mRotationKeys[index]).mValue;
+            }
+
+            if (index == 0) rotn = (ndAnim2->mRotationKeys[index]).mValue;
+            else {
+                aiQuaternion rotn1 = (ndAnim2->mRotationKeys[index - 1]).mValue;
+                aiQuaternion rotn2 = (ndAnim2->mRotationKeys[index]).mValue;
+                double time1 = (ndAnim2->mRotationKeys[index - 1]).mTime * (duration1/duration2);
+                double time2 = (ndAnim2->mRotationKeys[index]).mTime * (duration1/duration2);
+                double factor = (tick - time1) / (time2 - time1);
+                rotn.Interpolate(rotn, rotn1, rotn2, factor);
+            }
+        }
+
         matRot3 = rotn.GetMatrix();
         matRot = aiMatrix4x4(matRot3);
         matProd = matPos * matRot;
@@ -401,6 +480,10 @@ void keyboard(unsigned char key, int x, int y)
     if (key == 'r') {
         camAngle = 0;
         camDistance = 3;
+    } else if (key == '1') {
+        watchingScene2 = false;
+    } else if (key == '2') {
+        watchingScene2 = true;
     }
     glutPostRedisplay();
 }
