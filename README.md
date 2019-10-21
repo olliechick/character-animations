@@ -14,6 +14,12 @@ A quick video of the three animations is at https://youtu.be/7TaeUtlKNcg.
 g++ -Wall -g -o animationX animationX.cpp -lGL -lGLU -lglut -lGLEW -lassimp -lIL -ILU
 ```
 
+Alternatively, you can use the build file:
+
+```bash
+./build X
+```
+
 Then run it using `./animationX`.
 
 Replace `X` with either `1`, `2`, or `3`, depending on which animation you want to run.
