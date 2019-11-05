@@ -26,12 +26,12 @@ Replace `X` with either `1`, `2`, or `3`, depending on which animation you want 
 
 ## Instructions for use
 
-The up and down arrow keys move the camera forwards and backwards, respectively.
-Page Up and Page Down move the camera forwards and backwards ten times as fast.
+The <kbd>↑</kbd> and <kbd>↓</kbd> arrow keys move the camera forwards and backwards, respectively.
+<kbd>Page Up</kbd> and <kbd>Page Down</kbd> move the camera forwards and backwards ten times as fast.
 
-The left and right arrow keys move the camera left and right, respectively, in a circle around the model.
-Home and End move the camera left and right ten times as fast.
+The <kbd>←</kbd> and <kbd>→</kbd> arrow keys move the camera left and right, respectively, in a circle around the model.
+<kbd>Home</kbd> and <kbd>End</kbd> move the camera left and right ten times as fast.
 
-The R key resets the camera and animation to their initial state.
+The <kbd>R</kbd> key resets the camera and animation to their initial state.
 
-For the dwarf model (animation 3), the 1 and 2 keys switch between the two animations.
+For the dwarf model (animation 3), the <kbd>1</kbd> and <kbd>2</kbd> keys switch between the two animations.
